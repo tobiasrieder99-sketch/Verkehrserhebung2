@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Verkehrserhebung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        h1 {
+            margin-bottom: 5px;
+        }
+        #datetime {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        button {
+            font-size: 18px;
+            padding: 15px 25px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 80%;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Verkehrserhebung Laubeggstrasse</h1>
+<div id="datetime"></div>
+
+<!-- Buttons -->
+<button onclick="addEntry('Velo')">Velo</button>
+<button onclick="addEntry('E-Bike (langsam)')">E-Bike (langsam)</button>
+<button onclick="addEntry('E-Bike (schnell)')">E-Bike (schnell)</button>
+<button onclick="addEntry('Scooter')">Scooter</button>
+
+<!-- Tabelle -->
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Fahrzeug</th>
+            <th>Datum</th>
+            <th>Zeit</th>
+        </tr>
+    </thead>
+    <tbody id="logTable"></tbody>
+</table>
+
+<!-- Download Button (neu unten) -->
+<button onclick="downloadCSV()">CSV herunterladen</button>
+<button onclick="deleteLastEntry()">Letzter Eintrag löschen</button>
+<script>
+    let count = 0;
+    let data = [];
+
+    function updateDateTime() {
+        const now = new Date();
+
+        const options = {
+            weekday: 'long',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        };
+
+        document.getElementById("datetime").innerText =
+            now.toLocaleString('de-CH', options);
+    }
+
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    function addEntry(type) {
+        count++;
+
+        const now = new Date();
+        const dateString = now.toLocaleDateString('de-CH');
+        const timeString = now.toLocaleTimeString();
+
+        data.push({
+            id: count,
+            type: type,
+            date: dateString,
+            time: timeString
+        });
+
+        const table = document.getElementById("logTable");
+        const row = table.insertRow();
+
+        row.insertCell(0).innerText = count;
+        row.insertCell(1).innerText = type;
+        row.insertCell(2).innerText = dateString;
+        row.insertCell(3).innerText = timeString;
+    }
+
+    function downloadCSV() {
+        let csv = "Nr;Fahrzeug;Datum;Zeit\n";
+
+        data.forEach(entry => {
+            csv += `${entry.id};${entry.type};${entry.date};${entry.time}\n`;
+        });
+
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "verkehrserhebung.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+function deleteLastEntry() {
+    if (data.length === 0) return; // nichts zu löschen
+
+    // Letzten Eintrag aus Array entfernen
+    data.pop();
+    count--;
+
+    // Letzte Zeile aus Tabelle entfernen
+    const table = document.getElementById("logTable");
+    table.deleteRow(table.rows.length - 1);
+}
+
+</script>
+
+</body>
+</html>
